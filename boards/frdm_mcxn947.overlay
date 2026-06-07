@@ -1,0 +1,93 @@
+/*
+ * frdm_mcxn947.overlay
+ * Configuración de hardware para el proyecto frdm_env_monitor
+ * Board: NXP FRDM-MCXN947
+ */
+
+/ {
+    chosen {
+        zephyr,console    = &lpuart4;
+        zephyr,shell-uart = &lpuart4;
+    };
+
+    /*
+     * Aliases para que el código C acceda a los periféricos
+     * con nombres independientes del hardware concreto.
+     */
+    aliases {
+        led-red   = &rgb_red;
+        led-green = &rgb_green;
+        led-blue  = &rgb_blue;
+        accel     = &lis3dh;
+        env-sensor= &bme680;
+        ref-temp  = &p3t1755;
+        touch-adc = &adc0;
+    };
+
+    /* ── RGB LED ─────────────────────────────────────────────────────────── */
+    leds {
+        compatible = "gpio-leds";
+
+        rgb_red: led_red {
+            gpios = <&gpio0 10 GPIO_ACTIVE_LOW>;
+            label = "RGB Red";
+        };
+        rgb_green: led_green {
+            gpios = <&gpio0 11 GPIO_ACTIVE_LOW>;
+            label = "RGB Green";
+        };
+        rgb_blue: led_blue {
+            gpios = <&gpio0 12 GPIO_ACTIVE_LOW>;
+            label = "RGB Blue";
+        };
+    };
+};
+
+/* ── I2C3 — BME680 ────────────────────────────────────────────────────────── */
+&lpi2c3 {
+    status = "okay";
+    clock-frequency = <I2C_BITRATE_FAST>;   /* 400 kHz */
+
+    bme680: bme680@76 {
+        compatible = "bosch,bme680";
+        reg = <0x76>;                        /* SDO = GND → 0x76 */
+        label = "BME680";
+    };
+};
+
+/* ── SPI1 — LIS3DH ───────────────────────────────────────────────────────── */
+&lpspi1 {
+    status = "okay";
+    cs-gpios  = <&gpio1 6 GPIO_ACTIVE_LOW>;  /* CS manual por GPIO */
+
+    lis3dh: lis3dh@0 {
+        compatible = "st,lis3dh";
+        reg = <0>;
+        spi-max-frequency = <10000000>;      /* 10 MHz */
+        label = "LIS3DH";
+        irq-gpios = <&gpio1 7 GPIO_ACTIVE_HIGH>;
+    };
+};
+
+/* ── I3C0 — P3T1755DP (sensor embebido en la tarjeta) ───────────────────── */
+&i3c0 {
+    status = "okay";
+    /* Dirección I3C dinámica asignada durante DAA */
+    p3t1755: p3t1755@08 {
+        compatible = "nxp,p3t1755";
+        reg = <0x08 0x00 0x00>;
+        label = "P3T1755DP";
+    };
+};
+
+/* ── ADC0 — Touch slider (lectura capacitiva) ────────────────────────────── */
+&adc0 {
+    status = "okay";
+    #io-channel-cells = <1>;
+};
+
+/* ── LPUART4 — Consola / reporte de datos ───────────────────────────────── */
+&lpuart4 {
+    status = "okay";
+    current-speed = <115200>;
+};

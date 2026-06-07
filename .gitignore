@@ -1,0 +1,22 @@
+﻿# Zephyr build output
+build/
+twister-out/
+
+# West
+.west/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

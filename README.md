@@ -1,5 +1,5 @@
 # FRDM-MCXN947 — Environmental & Motion Monitor Station
-### Proyecto de RTOS | Universidad Galileo | Grupo Intelecto
+### Universidad Galileo | PDAE/RTOS | Proyecto Final
 
 ---
 

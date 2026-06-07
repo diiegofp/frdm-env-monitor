@@ -1,0 +1,85 @@
+/*
+ * frdm_mcxn947.overlay
+ * Configuración de hardware para frdm_env_monitor
+ * Board: NXP FRDM-MCXN947  |  Zephyr 4.4.x
+ *
+ * Basado en el DTS base real de la tarjeta (frdm_mcxn947.dtsi):
+ *  - LEDs: gpio-leds, nodos red_led/green_led/blue_led, status disabled por defecto
+ *  - Flexcomm2: pinmux ya definido como pinmux_flexcomm2_lpi2c
+ *  - Flexcomm3: pinmux ya definido como pinmux_flexcomm3_lpi2c
+ *  - Touch slider: tsi0 (no ADC)
+ *  - ADC: lpadc0
+ */
+
+/* ── Habilitar LEDs RGB (están disabled en el DTS base) ─────────────────── */
+&red_led {
+    status = "okay";
+};
+
+&green_led {
+    status = "okay";
+};
+
+&blue_led {
+    status = "okay";
+};
+
+/* ── I2C3 (Flexcomm3) — BME680 ───────────────────────────────────────────
+ * Pinmux ya definido en DTS base (pinmux_flexcomm3_lpi2c).
+ * Pines: P3_2=SCL, P3_3=SDA (header Arduino A5/A4).
+ * SDO del BME680 a GND → dirección 0x76.
+ */
+&flexcomm3_lpi2c3 {
+    status = "okay";
+    clock-frequency = <I2C_BITRATE_FAST>;
+
+    bme680: bme680@76 {
+        compatible = "bosch,bme680";
+        reg = <0x76>;
+    };
+};
+
+/* ── I2C2 (Flexcomm2) — LIS3DH ──────────────────────────────────────────
+ * Pinmux ya definido en DTS base (pinmux_flexcomm2_lpi2c).
+ * Pines: P4_0=SDA, P4_1=SCL.
+ * SDO del LIS3DH a GND → dirección 0x18.
+ * CS del LIS3DH a VCC  → fuerza modo I2C (obligatorio).
+ */
+&flexcomm2_lpi2c2 {
+    status = "okay";
+    clock-frequency = <I2C_BITRATE_FAST>;
+
+    lis3dh: lis3dh@18 {
+        compatible = "st,lis2dh";
+        reg = <0x18>;
+    };
+};
+
+/* ── I3C1 — P3T1755DP (sensor de temperatura embebido en la tarjeta) ─────
+ * La tarjeta usa i3c1 con pinmux_i3c1 ya definido en el DTS base.
+ */
+&i3c1 {
+    status = "okay";
+
+    p3t1755: p3t1755@8 {
+        compatible = "nxp,p3t1755";
+        reg = <0x8 0x0 0x0>;
+    };
+};
+
+/* ── TSI0 — Touch slider ─────────────────────────────────────────────────
+ * El touch slider usa el periférico TSI (Touch Sensing Input).
+ * Ya está configurado en el DTS base con pinmux_tsi.
+ * Solo lo habilitamos.
+ */
+&tsi0 {
+    status = "okay";
+};
+
+/* ── LPUART4 — Consola (ya configurada en DTS base) ─────────────────────
+ * El DTS base cpu0 ya apunta la consola a flexcomm4_lpuart4.
+ */
+&flexcomm4_lpuart4 {
+    status = "okay";
+    current-speed = <115200>;
+};

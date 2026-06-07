@@ -50,10 +50,13 @@ static struct k_thread tcb_reporter;
 static struct k_thread tcb_alert;
 static struct k_thread tcb_touch;
 
-/* ── Nodos del devicetree ────────────────────────────────────────────────── */
-#define NODE_BME680   DT_ALIAS(env_sensor)
-#define NODE_LIS3DH   DT_ALIAS(accel)
-#define NODE_P3T1755  DT_ALIAS(ref_temp)
+/* ── Nodos del devicetree ────────────────────────────────────────────────
+ * Usamos DT_NODELABEL() que apunta directamente al nombre del nodo
+ * definido en el overlay, sin depender de aliases.
+ */
+#define NODE_BME680   DT_NODELABEL(bme680)
+#define NODE_LIS3DH   DT_NODELABEL(lis3dh)
+#define NODE_P3T1755  DT_NODELABEL(p3t1755)
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /*  Función auxiliar: verifica que un device esté listo                       */

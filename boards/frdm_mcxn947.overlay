@@ -55,17 +55,50 @@
     };
 };
 
-/* ── SPI1 — LIS3DH ───────────────────────────────────────────────────────── */
-&lpspi1 {
-    status = "okay";
-    cs-gpios  = <&gpio1 6 GPIO_ACTIVE_LOW>;  /* CS manual por GPIO */
+/* ── Pinmux para Flexcomm2 como I2C (P4_0 = SDA, P4_1 = SCL) ────────────
+ *
+ * El MCXN947 tiene un sistema de pinmux: cada pin físico puede cumplir
+ * varias funciones (GPIO, I2C, SPI, UART...). Aquí le decimos que P4_0
+ * y P4_1 deben actuar como SDA/SCL del Flexcomm2.
+ *
+ * bias-pull-up      → resistencias pull-up internas (necesarias en I2C)
+ * drive-open-drain  → I2C requiere salida open-drain por protocolo
+ * input-enable      → el pin también recibe datos (bidireccional)
+ * slew-rate = fast  → transiciones rápidas para 400 kHz
+ */
+&pinctrl {
+    pinmux_flexcomm2_lpi2c: pinmux_flexcomm2_lpi2c {
+        group0 {
+            pinmux = <FC2_P0_PIO4_0>,   /* SDA → P4_0 */
+                     <FC2_P1_PIO4_1>;   /* SCL → P4_1 */
+            slew-rate = "fast";
+            drive-strength = "low";
+            input-enable;
+            bias-pull-up;
+            drive-open-drain;
+        };
+    };
+};
 
-    lis3dh: lis3dh@0 {
+/* ── I2C2 (Flexcomm2) — LIS3DH ───────────────────────────────────────────
+ *
+ * flexcomm2_lpi2c2 es el nombre del nodo I2C en el devicetree base de
+ * Zephyr para la FRDM-MCXN947. Cada Flexcomm puede ser I2C, SPI o UART
+ * — aquí lo configuramos como I2C.
+ *
+ * El LIS3DH en modo I2C tiene dirección 0x18 cuando SDO está en GND.
+ * CS debe estar en VCC para habilitar el modo I2C (ver conexionado).
+ */
+&flexcomm2_lpi2c2 {
+    status = "okay";
+    pinctrl-0 = <&pinmux_flexcomm2_lpi2c>;
+    pinctrl-names = "default";
+    clock-frequency = <I2C_BITRATE_FAST>;   /* 400 kHz */
+
+    lis3dh: lis3dh@18 {
         compatible = "st,lis3dh";
-        reg = <0>;
-        spi-max-frequency = <10000000>;      /* 10 MHz */
+        reg = <0x18>;                        /* SDO = GND → 0x18 */
         label = "LIS3DH";
-        irq-gpios = <&gpio1 7 GPIO_ACTIVE_HIGH>;
     };
 };
 
